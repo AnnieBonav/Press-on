@@ -1,4 +1,35 @@
-int sensorPin = A0; // Flex Sensor is connected to this pin
+/*
+Microcontrollers proyect
+Ana Bonavides Aguilar
+cc211010
+*/
+int sensorPin = A0;
+
+int flex500gPin = A0;
+int flex10kgPin = A1;
+
+String flex1label = "500g";
+String flex2label = "10kg";
+
+float highestADC = 0;
+float lowestADC = 400;
+
+bool label = true;
+
+float percent = 0.05;
+float threshhold = 1024*percent;
+
+int freq = 1000;
+
+int flex1data, flex2data;
+
+int lowerLimit = 0;
+int upperLimt = 0;
+
+long int pastTime = 0;
+long int currentTime = 0;
+long int totalTime = 0;
+
 int PWMPin = 6; // LED is attached to this Pin
 float VCC = 3.3; // Arduino is powered with 5V VCC
 float R2 = 12000; // 10K resistor is
@@ -10,10 +41,24 @@ int minADCRaw = 400;
 
 void setup() {
   Serial.begin(9600); // Initialize the serial with 9600 baud
-  pinMode(sensorPin, INPUT); // Sensor pin as input
+  pinMode(flex500gPin, INPUT);
+  pinMode(flex10kgPin, INPUT);
+  pastTime = millis();
 }
 
 void loop() {
+  totalTime = millis();
+  currentTime = totalTime - currentTime;
+
+  flex1data = analogRead(flex500gPin);
+
+  Serial.print(flex1data);
+  Serial.print(",");
+  Serial.println(currentTime);
+  delay(100);
+}
+
+void OldLoop() {
   int ADCRaw = analogRead(sensorPin);
   GetHighestADCRaw(ADCRaw);
   GetLowestADCRaw(ADCRaw);
@@ -30,7 +75,6 @@ void loop() {
 
   delay(100);
 }
-
 void GetHighestADCRaw(float ADCRaw){
   if(ADCRaw > maxADCRaw){
     maxADCRaw = ADCRaw;
