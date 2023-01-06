@@ -7,11 +7,7 @@ import serial
 import tkinter as tk
 
 
-layout = [  [sg.Text("Welcome, Annie")],
-            [sg.Text("This is the signal", key = '-RawSignal-')],
-            [sg.Button('Get Signal', key = '-StartSignal-'), sg.Button('Stop', key = '-StopSignal-')] ]
 
-window = sg.Window('Window Title', layout)
 
 #flexSignal = SignalClass.FlexSignal("Annie.csv")
 #flexSignal.PrintFileName()
@@ -35,6 +31,14 @@ class SerialThread(threading.Thread):
 
 class App(tk.Tk):
     def __init__(self):
+        self.layout = [  [sg.Text("Welcome, Annie")],
+            [sg.Text("This is the signal", key = '-RawSignal-')],
+            [sg.Button('Get Signal', key = '-StartSignal-'), sg.Button('Stop', key = '-StopSignal-')] ]
+
+        self.window = sg.Window('Window Title', self.layout)
+
+
+
         tk.Tk.__init__(self)
         self.geometry("1000x750")
         frameLabel = tk.Frame(self, padx=40, pady =40)
