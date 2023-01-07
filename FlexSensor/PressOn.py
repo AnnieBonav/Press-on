@@ -1,46 +1,58 @@
 import PySimpleGUI as sg
 import SignalClass
 import time
-from multiprocessing import Process
+import threading
+import queue as Queue
+import serial
 
-layout = [  [sg.Text("Welcome, Annie")],
+class SerialThread(threading.Thread, sg.Window):
+    def __init__(self, queue, window):
+        threading.Thread.__init__(self)
+        self.queue = queue
+        self.window = window
+        self.isRunning = True
+        self.flexSignal = SignalClass.FlexSignal("Annie.csv")
+    
+    def run(self):
+        time.sleep(0.5)
+        while self.isRunning:
+            if self.flexSignal.ser.inWaiting():
+                data = self.flexSignal.GetSignalData()
+                self.window['-RawSignal-'].update(data)
+        
+
+class App():
+    def __init__(self):
+        self.layout = [  [sg.Text("Welcome, Annie")],
             [sg.Text("This is the signal", key = '-RawSignal-')],
             [sg.Button('Get Signal', key = '-StartSignal-'), sg.Button('Stop', key = '-StopSignal-')] ]
+        self.window = sg.Window('Window Title', self.layout)
+        self.running = True
 
-window = sg.Window('Window Title', layout)
+        self.queue = Queue.Queue()
+        self.thread = SerialThread(self.queue, self.window)
+        self.thread.start()
 
-flexSignal = SignalClass.FlexSignal("Annie.csv")
-flexSignal.PrintFileName()
-flexSignal.GetSignalData()
+        self.RunApp()
 
-def myName(name):
-    running = True
-    while running:
-        event, values = window.read()
-
-        if event == '-StartSignal-':
-            window['-RawSignal-'].update(4)
-            #flexSignal.isRunning = True
-            
-            
-            #while flexSignal.isRunning:
-                #flexSignal.GetSignalData()
-                #time.sleep(100)
-                #window['-RawSignal-'].update(data)
+    def RunApp(self):
+        while self.running:
+            event, values = self.window.read()
 
 
-        if event == '-StopSignal-':
-            window['-RawSignal-'].update(0)
-            #flexSignal.isRunning = False
-            print("I am stopping")
-            #window['-RawSignal-'].update(0)
+            if event == '-StartSignal-':
+                self.window['-RawSignal-'].update(4)
 
-        if event == sg.WIN_CLOSED:
-            running = False
-            window.close()
 
-if __name__ == '__main__':
-    p = Process(target = myName, args = ('Annie',))
-    p.start()
+            if event == '-StopSignal-':
+                self.window['-RawSignal-'].update(0)
 
-print("end")
+            if event == sg.WIN_CLOSED:
+                self.running = False
+                self.thread.isRunning = False
+                self.window.close()
+
+
+PressOnApp = App()
+
+

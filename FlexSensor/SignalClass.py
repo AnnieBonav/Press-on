@@ -21,7 +21,6 @@ class FlexSignal:
         self.ser = serial.Serial(self.arduinoPort, self.baud)
         print("Connected to arduino port: " + self.arduinoPort)
         #file = open(self.dataFileName, "a")
-        print("Created file")
 
     def GetSignalData(self):
         #while self.isRuning: # I create an implicit listener: whenever I change this value oustide, the function will stop running
