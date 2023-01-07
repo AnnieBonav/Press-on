@@ -14,8 +14,7 @@ class SerialThread(threading.Thread, sg.Window):
         self.flexSignal = SignalClass.FlexSignal("Annie.csv")
     
     def run(self):
-        print("Entered run:")
-        time.sleep(0.5)
+        time.sleep(0.2)
         while self.isRunning:
             if self.flexSignal.ser.inWaiting():
                 data = self.flexSignal.GetSignalData()
