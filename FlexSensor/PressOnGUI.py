@@ -14,8 +14,8 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         self.isRunning = True
         self.flexSignal = SignalClass.FlexSignal("Annie.csv")
 
-        self.minNum = 160
-        self.maxNum = 650
+        self.minNum = 250
+        self.maxNum = 1023
         self.squareColor = '#FFFFFF'
 
         self.window['-CurrentMin-'].update(self.minNum)
