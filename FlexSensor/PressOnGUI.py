@@ -3,7 +3,6 @@ import SignalClass
 import time
 import threading
 import queue as Queue
-import serial
 
 class SerialThread(threading.Thread, sg.Window, sg.Graph):
     def __init__(self, queue, window, graph):
