@@ -4,7 +4,7 @@ import os
 class FlexSignal:
     def __init__(self, fileName):
         self.fileName = fileName
-        self.arduinoPort = "COM4"
+        self.arduinoPort = "COM3"
         self.baud = 9600
         
         self.minSignal = 23
