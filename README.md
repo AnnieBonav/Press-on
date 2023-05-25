@@ -1,4 +1,9 @@
 # TBD_Microcontorllers
+
+## Next steps
+### Code
+- Add chnaging in COM port during runtime
+
 ## Idea
 The project´s idea was pitched by the department of Social Sciences of the University of Applied Sciences of St. Pölten
 

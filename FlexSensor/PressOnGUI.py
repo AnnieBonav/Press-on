@@ -4,6 +4,14 @@ import time
 import threading
 import queue as Queue
 
+import SerialConnection as sc
+
+serial_port = None
+
+print(sc.get_serial_port())
+sc.set_serial_port("COM4")
+print(sc.get_serial_port())
+
 class SerialThread(threading.Thread, sg.Window, sg.Graph):
     def __init__(self, queue, window, graph):
         threading.Thread.__init__(self)
