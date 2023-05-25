@@ -21,7 +21,7 @@ def get_signal_data():
     data = get_data[2:][:-5]
     return data
 
-def rrite_to_file():
+def write_to_file():
     data = 0 #Data should be equal to something gotten from the port
     file = open(file_name, "a")
     file.write(data + "\n")
