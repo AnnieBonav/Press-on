@@ -1,16 +1,8 @@
 import PySimpleGUI as sg
-import SignalClass
+import FlexSignal as fs # flex signal
 import time
 import threading
 import queue as Queue
-
-import SerialConnection as sc
-
-serial_port = None
-
-print(sc.get_serial_port())
-sc.set_serial_port("COM4")
-print(sc.get_serial_port())
 
 class SerialThread(threading.Thread, sg.Window, sg.Graph):
     def __init__(self, queue, window, graph):
@@ -19,7 +11,7 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         self.window = window
         self.graph = graph
         self.isRunning = True
-        self.flexSignal = SignalClass.FlexSignal("Annie.csv")
+        self.flexSignal = fs
 
         self.minNum = 250
         self.maxNum = 1023
@@ -44,7 +36,7 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         time.sleep(0.2)
         while self.isRunning:
             if self.flexSignal.ser.inWaiting():
-                data = self.flexSignal.GetSignalData()
+                data = self.flexSignal.get_signal_data()
                 if(data != ''):
                     normalizedData = (int(data) -self.minNum) / (self.maxNum - self.minNum)
                 else:
