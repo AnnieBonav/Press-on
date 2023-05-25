@@ -3,8 +3,10 @@ import time
 import threading
 import PySimpleGUI as sg
 
+# If thread has been stopped, the program does not crash
 class SerialThread(threading.Thread, sg.Window, sg.Graph):
     def __init__(self, queue, window, graph):
+        self.stopped = False
         threading.Thread.__init__(self)
         self.queue = queue
         self.window = window
@@ -21,8 +23,14 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         self.window['-CurrentMax-'].update(self.maxNum)
         self.window['-MaxInput-'].update(self.maxNum)
 
-        
+    def stop_serial_thread(self):
+        print("Stopping thread")
+        print(self.stopped)
+
+        self.stopped = True
+
     def update_min_max(self, min, max):
+        print("Update min max")
         self.minNum = min
         self.maxNum = max
         self.window['-CurrentMin-'].update(self.minNum)
@@ -33,7 +41,7 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
 
     def run(self):
         time.sleep(0.2)
-        while self.isRunning:
+        while not self.stopped:
             if self.flexSignal.ser.inWaiting():
                 data = self.flexSignal.get_signal_data()
                 if(data != ''):

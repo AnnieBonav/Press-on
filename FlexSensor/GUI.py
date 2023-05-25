@@ -2,11 +2,23 @@ import PySimpleGUI as sg
 import queue as Queue
 import SerialThread
 
+sg.LOOK_AND_FEEL_TABLE['PressOnTheme'] = {'BACKGROUND': '#DAE0E6',
+                                        'TEXT': '#0A002B',
+                                        'INPUT': '#C8D6E4',
+                                        'TEXT_INPUT': '#000000',
+                                        'SCROLL': '#99CC99',
+                                        'BUTTON': ('#FDF9F9', '#675E84'),
+                                        'PROGRESS': ('#D1826B', '#CC8019'),
+                                        'BORDER': 1, 'SLIDER_DEPTH': 0,
+                                        'PROGRESS_DEPTH': 0, }
+  
+sg.theme('PressOnTheme')
+
 button_size = (12,2)
 text_font = 'Franklin 18'
 debugging = False
 
-layout = [[sg.Text("Welcome, Annie", font = text_font, size = (80,1)), sg.Button('Debugging', key = '-Debugging-')],
+layout = [[sg.Text("Welcome, Annie", font = text_font, size = (80,1)), sg.Button('Debugging', key = '-Debugging-'), sg.Button('Stop Thread', key = '-Test-')],
         [sg.Graph(
             canvas_size=(200, 200),
             graph_bottom_left=(0, 0),
@@ -55,16 +67,20 @@ def ToggleVisibility():
 
     window.Element('-UpdateMinMax-').Update(visible = debugging)
 
+
 def run_app():
     print("Started running app")
 
     ToggleVisibility()
     global running
     global debugging
+    global serial_thread
     
     while running:
-        print("running")
         event, values = window.read()
+
+        if event == "-Test-":
+            serial_thread.stop_serial_thread()
 
         if event == '-Debugging-':
             debugging = not debugging
