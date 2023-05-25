@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import queue as Queue
 import SerialThread
+import FlexSignal as fs
 
 available_ports = ["COM3", "COM4", "COM5"]
 
@@ -97,7 +98,13 @@ def run_app():
                 change_com(item)
 
         if event == "-Test-":
-            serial_thread.stop_serial_thread()
+            print("Trying to start communication")
+            success = fs.start_connection("COM3")
+            if success:
+                print("The change was successful")
+                serial_thread.resume()
+            else:
+                print("Change was unsuccessfull")
 
         if event == '-Debugging-':
             debugging = not debugging
