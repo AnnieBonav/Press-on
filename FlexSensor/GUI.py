@@ -2,6 +2,8 @@ import PySimpleGUI as sg
 import queue as Queue
 import SerialThread
 
+available_ports = ["COM3", "COM4", "COM5"]
+
 sg.LOOK_AND_FEEL_TABLE['PressOnTheme'] = {'BACKGROUND': '#DAE0E6',
                                         'TEXT': '#0A002B',
                                         'INPUT': '#C8D6E4',
@@ -18,7 +20,8 @@ button_size = (12,2)
 text_font = 'Franklin 18'
 debugging = False
 
-layout = [[sg.Text("Welcome, Annie", font = text_font, size = (80,1)), sg.Button('Debugging', key = '-Debugging-'), sg.Button('Stop Thread', key = '-Test-')],
+layout = [[sg.Text("Welcome, Annie", font = text_font, size = (80,1)), sg.Button('Debugging', key = '-Debugging-'), sg.Button('Stop Thread', key = '-Test-'), sg.Listbox(list(available_ports), enable_events=True, size=(20,4), key='-COMSList-')],
+          [sg.Text("Selected COM: ", font = text_font, size = (80,1), key = "-COM-")],
         [sg.Graph(
             canvas_size=(200, 200),
             graph_bottom_left=(0, 0),
@@ -68,6 +71,9 @@ def ToggleVisibility():
     window.Element('-UpdateMinMax-').Update(visible = debugging)
 
 
+def change_com(new_com):
+    print("Changing COM with: ", new_com)
+
 def run_app():
     print("Started running app")
 
@@ -76,8 +82,19 @@ def run_app():
     global debugging
     global serial_thread
     
+    coms_listbox = window['-COMSList-']
+    com_text = window["-COM-"]
+
     while running:
         event, values = window.read()
+
+        if event == "-COMSList-":
+            selection = values[event]
+            if selection:
+                item = selection[0] # The written name
+                index = coms_listbox.get_indexes()[0] # The index of the line
+                com_text.update(f'Selected COM: {item}')
+                change_com(item)
 
         if event == "-Test-":
             serial_thread.stop_serial_thread()
