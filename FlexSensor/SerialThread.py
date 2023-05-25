@@ -13,14 +13,17 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         self.graph = graph
         # If the connection is not found, the serial thread should not start
         self.flexSignal = fs
-        success = self.flexSignal.start_connection("COM4")
+        selected_com = "COM4"
+        success = self.flexSignal.start_connection(selected_com)
 
         self.pause_condition = threading.Condition(threading.Lock())
         if success:
             self.paused = False
+            self.window["-COM-"].update("Selected COM: ", selected_com)
             print("Connection was succesfull")
         else:
             self.pause()
+            self.window["-COM-"].update(f"Invalid USB port '{selected_com}'. Please select another COM. ")
             print("Connection failed, add a valid connection")
 
         self.minNum = 250
@@ -54,7 +57,6 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         return ('{:X}{:X}{:X}').format(r, g, b)
 
     def run(self):
-        print("i am in run")
         time.sleep(0.2)
         while True:
             with self.pause_condition:
@@ -64,7 +66,6 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
                 if self.flexSignal.serial_signal.inWaiting():
                     data = self.flexSignal.get_signal_data()
                     if(data != ''):
-                        print(type(data), data, " minNum: ", self.minNum, " maxNum: ", self.maxNum)
                         normalizedData = (int(data) -self.minNum) / (self.maxNum - self.minNum)
                     else:
                         normalizedData = 0
@@ -87,4 +88,3 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
                     self.window['-Hex-'].update(self.squareColor)
 
                     self.graph.DrawCircle((100, 100), 100,fill_color = self.squareColor)
-                    #self.graph.DrawRectangle((200, 200), (250, 250),fill_color= 'red')
