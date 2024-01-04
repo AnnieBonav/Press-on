@@ -73,7 +73,16 @@ def ToggleVisibility():
 
 
 def change_com(new_com):
-    print("Changing COM with: ", new_com)
+    global window
+    success = fs.start_connection(new_com)
+    if success:
+        print("The change was successful")
+        window["-COM-"].update(f"Selected COM: {new_com}")
+        serial_thread.resume()
+    else:
+        window["-COM-"].update(f"Invalid selected COM: {new_com}")
+        serial_thread.pause()
+        print("Change was unsuccessfull")
 
 def run_app():
     print("Started running app")
@@ -98,13 +107,7 @@ def run_app():
                 change_com(item)
 
         if event == "-Test-":
-            print("Trying to start communication")
-            success = fs.start_connection("COM3")
-            if success:
-                print("The change was successful")
-                serial_thread.resume()
-            else:
-                print("Change was unsuccessfull")
+            print("This is a test")
 
         if event == '-Debugging-':
             debugging = not debugging
