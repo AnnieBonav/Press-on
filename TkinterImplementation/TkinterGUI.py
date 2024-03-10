@@ -1,11 +1,11 @@
 from tkinter import *
-import queue as Queue
+import queue as Queue, customtkinter as ctk
 import TkinterSerialThread as thread
 import TkinterFlexSignal as fs
 import time
 isDebugging = False
 
-root = Tk()
+root = ctk.CTk()
 
 # Setup main variables
 screenWidth = root.winfo_screenwidth() // 2
@@ -22,12 +22,13 @@ maxNumRow = minNumRow + 1
 colorDataRow = maxNumRow + 1
 
 # Title
-title = Label(text="Press-On", font=("Arial", 24), background="pink")
-title.grid(row = titleRow, column = 0, columnspan = 2)
+title = ctk.CTkLabel(root, text="Press-On", font=("Helvetica", 24))
+title.grid(row = titleRow, column = 0, columnspan = 2, pady = 10)
 
 # Greeting
-greeting = Label(text = "Hello! This is Press-On, an Application designed to help you visualize the pressure that a user is applying to a ball.", font=("Arial", 16), wraplength=300)
+greeting = ctk.CTkLabel(root, text = "Hello! This is Press-On, an Application designed to help you visualize the pressure that a user is applying to a ball.", font=("Arial", 16), wraplength=300)
 greeting.grid(row = greetingRow, column = 0, columnspan=2)
+
 
 def toggleDebugging():
     printFoo()
@@ -42,25 +43,21 @@ def toggleDebugging():
     print("Toggling debugging, now", isDebugging)
     debugButton["text"] = "Debug" if not isDebugging else "Stop Debugging"
 
-debugButton = Button(root, text = "Debug", command = toggleDebugging, width = 10)
-debugButton.grid(row = debugButtonRow, column = 0, columnspan = 2)
+debugButton = ctk.CTkButton(root, text = "Debug", command = toggleDebugging, width = 10, font=("Arial", 14))
+debugButton.grid(row = debugButtonRow, column = 0, columnspan = 2, pady = 10)
 
 
 # Setup main Canvas
-root.geometry(f"{screenWidth}x{screenHeight}")
-canvas = Canvas(root, width=screenWidth//3*2, height=screenHeight//2, background="pink")
-canvas.grid(row = canvasRow, column = 0)
+# root.geometry(f"{screenWidth}x{screenHeight}")
+canvas = ctk.CTkCanvas(root, width=screenWidth//3*2, height=screenHeight//2, bg="white")
+canvas.grid(row = canvasRow, column = 0, padx=40)
 
-# Setup debugging Canvas
-# debuggingCanvas = Canvas(root, width=screenWidth//3*2, height=screenHeight//3, background="green")
-# debuggingCanvas.pack()
-
-debuggingFrame = Frame(root, background="red", width=screenWidth//3*2, height=screenHeight//4)
+debuggingFrame = ctk.CTkFrame(root, width=screenWidth//3*2, height=screenHeight//4)
 debuggingFrame.grid(row = debuggingFrameRow, column = 0, columnspan = 2)
 
 # Debugging section
 rawValue = 1023
-currentRawValue = Label(debuggingFrame, text=f"I am a mock value: {rawValue}", font=("Arial", 16))
+currentRawValue = ctk.CTkLabel(debuggingFrame, text=f"I am a mock value: {rawValue}", font=("Arial", 16))
 currentRawValue.grid(row = currentRawValueRow, column = 0)
 
 #
@@ -69,27 +66,29 @@ currentRawValue.grid(row = currentRawValueRow, column = 0)
 minNumLabel = Label(debuggingFrame, text="Min: ", font=("Arial", 16))
 minNumLabel.grid(row = minNumRow, column = 0)
 
-fooBar = "Foo Bar"
-minNumInput = Entry(debuggingFrame, name="a-name", textvariable=fooBar, border=4, background="pink")
+fooBar = ctk.Variable()
+minNumInput = ctk.CTkEntry(debuggingFrame, textvariable = fooBar)
 minNumInput.grid(row = minNumRow, column = 1)
 
-maxNumLabel = Label(debuggingFrame, text="Max: ", font=("Arial", 16), justify="left")
+
+maxNumLabel = ctk.CTkLabel(debuggingFrame, text = "Max: ", font=("Arial", 16), justify="left")
 maxNumLabel.grid(row = maxNumRow, column = 0)
 
-maxNumInput = Entry(debuggingFrame, border=4, background="pink")
+maxNumInput = ctk.CTkEntry(debuggingFrame)
 maxNumInput.grid(row = maxNumRow, column = 1)
+
 
 #
 # Testing
 #
 normalizedValue = .9
-normalizedValueLabel = Label(debuggingFrame, text=f"I am a normalized value{normalizedValue}", background="green")
+normalizedValueLabel = ctk.CTkLabel(debuggingFrame, text=f"I am a normalized value{normalizedValue}")
 normalizedValueLabel.grid(row = colorDataRow, column = 0)
 
 r = 50
 g = 50
 b = 50
-rgbColorLabel = Label(debuggingFrame, text = f"({r}, {g}, {b})")
+rgbColorLabel = ctk.CTkLabel(debuggingFrame, text = f"({r}, {g}, {b})")
 rgbColorLabel.grid(row = colorDataRow, column = 1)
 
 def printFoo():
@@ -97,6 +96,7 @@ def printFoo():
     print(fooBar)
 
 square = canvas.create_rectangle(150, 150, 350, 350, fill="blue")
+
 
 def changeColor():
     current_color = canvas.itemcget(circle, "fill")
@@ -120,4 +120,5 @@ root.geometry(f"+{(root.winfo_screenwidth() - root.winfo_reqwidth()) // 2}+{(roo
 root.deiconify()
 
 debuggingFrame.grid_forget() # Starts with forgetting the debugging frame so it doesnt appear
+
 root.mainloop()
