@@ -1,12 +1,12 @@
 import TkinterFlexSignal as fs, time, threading, tkinter as tk
 
 class SerialThread(threading.Thread):
-    def __init__(self, queue, minNumLabel, maxNumLabel, canvas, rectangle):
+    def __init__(self, queue, minNumLabel, maxNumLabel, canvas, visualization):
         threading.Thread.__init__(self)
         self.queue = queue
         # self.root = root
         self.canvas = canvas
-        self.rectangle = rectangle
+        self.visualization = visualization
 
         # If the connection is not found, the serial thread should not start
         self.flexSignal = fs
@@ -89,7 +89,7 @@ class SerialThread(threading.Thread):
                     print("RGB: ", r, g, 0)
                     self.squareColor = "#" + self.squareColor
                     print(self.squareColor)
-                    self.canvas.itemconfig(self.rectangle, fill=self.squareColor)
+                    self.canvas.itemconfig(self.visualization, fill=self.squareColor)
                     # self.window['-Hex-'].update(self.squareColor)
 
                         # self.graph.DrawCircle((100, 100), 100,fill_color = self.squareColor)

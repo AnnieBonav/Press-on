@@ -38,7 +38,7 @@ def start_connection(com_name):
         print("Connection started on COM: ", serial_port)
         return True
     except:
-        print("Connection failed.")
+        print("Connection failed, no connection with COM", serial_port, ".")
         return False
     
 def end_connection():

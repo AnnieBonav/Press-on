@@ -13,13 +13,14 @@ class SerialThread(threading.Thread, sg.Window, sg.Graph):
         self.graph = graph
         # If the connection is not found, the serial thread should not start
         self.flexSignal = fs
-        selected_com = "COM4"
+        # selected_com = "COM4"
+        selected_com = "/dev/cu.usbserial-210"
         success = self.flexSignal.start_connection(selected_com)
 
         self.pause_condition = threading.Condition(threading.Lock())
         if success:
             self.paused = False
-            self.window["-COM-"].update("Selected COM: ", selected_com)
+            self.window["-COM-"].update("Selected COM: " + str(selected_com))
             print("Connection was succesfull")
         else:
             self.pause()

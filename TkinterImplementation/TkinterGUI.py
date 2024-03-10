@@ -21,12 +21,14 @@ minNumRow = currentRawValueRow + 1
 maxNumRow = minNumRow + 1
 colorDataRow = maxNumRow + 1
 
+visualizationSize = 400
+
 # Title
 title = ctk.CTkLabel(root, text="Press-On", font=("Helvetica", 24))
 title.grid(row = titleRow, column = 0, columnspan = 2, pady = 10)
 
 # Greeting
-greeting = ctk.CTkLabel(root, text = "Hello! This is Press-On, an Application designed to help you visualize the pressure that a user is applying to a ball.", font=("Arial", 16), wraplength=300)
+greeting = ctk.CTkLabel(root, text = "Hello! This is Press-On, an Application designed to help you visualize the pressure that a user is applying to a ball.", font=("Arial", 16), wraplength=300, pady=10, padx=10, justify="center")
 greeting.grid(row = greetingRow, column = 0, columnspan=2)
 
 
@@ -49,8 +51,8 @@ debugButton.grid(row = debugButtonRow, column = 0, columnspan = 2, pady = 10)
 
 # Setup main Canvas
 # root.geometry(f"{screenWidth}x{screenHeight}")
-canvas = ctk.CTkCanvas(root, width=screenWidth//3*2, height=screenHeight//2, bg="white")
-canvas.grid(row = canvasRow, column = 0, padx=40)
+canvas = ctk.CTkCanvas(root, width = visualizationSize, height = visualizationSize)
+canvas.grid(row = canvasRow, column = 0, padx=40, pady = 20)
 
 debuggingFrame = ctk.CTkFrame(root, width=screenWidth//3*2, height=screenHeight//4)
 debuggingFrame.grid(row = debuggingFrameRow, column = 0, columnspan = 2)
@@ -95,20 +97,7 @@ def printFoo():
     # minNumInput.focus_force()
     print(fooBar)
 
-rectangle = canvas.create_rectangle(150, 150, 350, 350, fill="blue")
-rectangle = canvas.create_rectangle(150, 150, 350, 350, fill="red")
-
-
-def changeColor():
-    current_color = canvas.itemcget(circle, "fill")
-    if current_color == "green":
-        canvas.itemconfig(circle, fill="red")
-    else:
-        canvas.itemconfig(circle, fill="green")
-    root.after(1000, changeColor)
-
-circle = canvas.create_oval(50, 50, 150, 150, fill="green")
-changeColor()
+visualization = canvas.create_oval(10, 10, 400, 400, fill="white")
 
 root.update_idletasks()
 root.withdraw()
@@ -117,11 +106,10 @@ root.deiconify()
 
 debuggingFrame.grid_forget() # Starts with forgetting the debugging frame so it doesnt appear
 
-
 running = True
 serialQueue = Queue.Queue()
 
-serialThread = thread.SerialThread(serialQueue, minNumLabel, maxNumLabel, canvas, rectangle)
+serialThread = thread.SerialThread(serialQueue, minNumLabel, maxNumLabel, canvas, visualization)
 serialThread.start()
 
 def updateNumbers():
