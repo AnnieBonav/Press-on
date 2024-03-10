@@ -52,3 +52,92 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pyzw
+*.pycachefile
+
+# Virtual Environments
+venv/
+env/
+env.bak/
+env1/
+env2/
+.env
+.Python
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+*.komodotools
+*.kate-swp
+*.kate-swp.*
+*~.nib
+*.swp
+*.swo
+*.tmp
+*.bak
+*.cache
+*.project
+*.tmproj
+*.esproj
+*.egg-info/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+test_*.py
+test_*.pyc
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Database
+*.sqlite3
+*.db
+
+# Translations
+*.mo
+*.pot
+
+# Documentation
+docs/_build/
+doc/_build/
+
+# Compiled files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.exe
+*.out
+*.bin
+*.iso
+*.egg
+*.egg-info
+*.whl
+*.pyz
+*.pyzw
+*.pycachefile
+
+# Logs
+*.log
+logs/
+log/
+
+_internal/
+build/
+
+.DS_Store
+secrets.env
+dist/
