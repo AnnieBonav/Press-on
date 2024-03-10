@@ -66,19 +66,20 @@ class SerialThread(threading.Thread):
                     else:
                         normalizedData = 0
 
-                    # self.window['-RawSignal-'].update(data)
+                    self.uiElements["currentRawInputLabel"].configure(text = "Raw input: " + str(data))
                     
                     if(normalizedData > 1):
                         normalizedData = 1
                     elif (normalizedData < 0):
                         normalizedData = 0
                     
-                    # self.window['-NormalizedSignal-'].update(normalizedData)
+                    self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + str(round(normalizedData, 3)))
                     
                     g = round(min(255, 2* 255 * normalizedData))
                     r = round(min(255, 2* 255 * (1-normalizedData)))
 
-                    # self.window['-RGB-'].update(str(r) + ", " + str(g) + ", 0")
+                    
+                    self.uiElements["rgbColorLabel"].configure(text = "RGB: " + str(r) + ", " + str(g) + ", 0")
                     visualizationColor = "#" + self.rgbToHex(r, g, 00)
                     self.uiElements["canvas"].itemconfig(self.uiElements["visualization"], fill=visualizationColor)
-                    # self.window['-Hex-'].update(self.squareColor)
+                    self.uiElements["hexColorLabel"].configure(text = "Hex: " + visualizationColor)
