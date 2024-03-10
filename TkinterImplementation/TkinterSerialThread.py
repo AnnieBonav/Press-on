@@ -1,12 +1,11 @@
 import TkinterFlexSignal as fs, time, threading, tkinter as tk
 
 class SerialThread(threading.Thread):
-    def __init__(self, queue, minNumLabel, maxNumLabel, canvas, visualization):
+    def __init__(self, queue, uiElements):
         threading.Thread.__init__(self)
         self.queue = queue
         # self.root = root
-        self.canvas = canvas
-        self.visualization = visualization
+        self.uiElements = uiElements
 
         # If the connection is not found, the serial thread should not start
         self.flexSignal = fs
@@ -27,8 +26,6 @@ class SerialThread(threading.Thread):
         self.squareColor = '#FFAFFF'
         self.minNum = 0
         self.maxNum = 650
-        self.minNumLabel = minNumLabel
-        self.maxNumLabel = maxNumLabel
 
         print("Finish initializing")
 
@@ -42,16 +39,15 @@ class SerialThread(threading.Thread):
         self.pause_condition.notify()
         self.pause_condition.release()
 
-    def updateMinMax(self, min, max):
-        print("Update min max")
+    def updateMin(self, min):
         self.minNum = min
+        print(f"Updating min in serial thread with Min: {self.minNum}")
+        self.uiElements["minNumLabel"].configure(text = "Current min: " + str(self.minNum))
+
+    def updateMax(self, max):
         self.maxNum = max
-
-        self.minNumLabel = self.minNum
-        self.maxNumLabel = self.maxNum
-
-        print("NEW MIN: ", self.minNum)
-        print("NEW MAX: ", self.maxNum)
+        print(f"Updating max in serial thread with Max : {self.maxNum}")
+        self.uiElements["maxNumLabel"].configure(text = "Current max: " + str(self.maxNum))
 
     def rgbToHex(self, r, g, b):
         return ('{:02X}{:02X}{:02X}').format(r, g, b)
@@ -66,32 +62,23 @@ class SerialThread(threading.Thread):
                 if self.flexSignal.serial_signal.inWaiting():
                     data = self.flexSignal.get_signal_data()
                     if(data != ''):
-                        normalizedData = (int(data) -self.minNum) / (self.maxNum - self.minNum)
+                        normalizedData = (int(data) - int(self.minNum) ) / (int(self.maxNum) - int(self.minNum))
                     else:
                         normalizedData = 0
 
                     # self.window['-RawSignal-'].update(data)
                     
-
                     if(normalizedData > 1):
                         normalizedData = 1
                     elif (normalizedData < 0):
                         normalizedData = 0
                     
-                    print("Normalized Data: ", normalizedData)
                     # self.window['-NormalizedSignal-'].update(normalizedData)
                     
                     g = round(min(255, 2* 255 * normalizedData))
                     r = round(min(255, 2* 255 * (1-normalizedData)))
 
                     # self.window['-RGB-'].update(str(r) + ", " + str(g) + ", 0")
-                    self.squareColor = self.rgbToHex(r, g, 00)
-                    print("RGB: ", r, g, 0)
-                    self.squareColor = "#" + self.squareColor
-                    print(self.squareColor)
-                    self.canvas.itemconfig(self.visualization, fill=self.squareColor)
+                    visualizationColor = "#" + self.rgbToHex(r, g, 00)
+                    self.uiElements["canvas"].itemconfig(self.uiElements["visualization"], fill=visualizationColor)
                     # self.window['-Hex-'].update(self.squareColor)
-
-                        # self.graph.DrawCircle((100, 100), 100,fill_color = self.squareColor)
-                        # canvas.itemconfig(circle, fill="red")
-                    #self.window.itemconfig(self.graph(fill = self.squareColor))
