@@ -110,11 +110,6 @@ def changeColor():
 circle = canvas.create_oval(50, 50, 150, 150, fill="green")
 changeColor()
 
-# running = True
-# serial_queue = Queue.Queue()
-
-# serial_thread = thread.SerialThread(serial_queue, root, rectangle)
-# serial_thread.start()
 root.update_idletasks()
 root.withdraw()
 root.geometry(f"+{(root.winfo_screenwidth() - root.winfo_reqwidth()) // 2}+{(root.winfo_screenheight() - root.winfo_reqheight()) // 2}")

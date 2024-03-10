@@ -53,8 +53,8 @@ class SerialThread(threading.Thread):
         print("NEW MIN: ", self.minNum)
         print("NEW MAX: ", self.maxNum)
 
-    def rgb_to_hex(self, r, g, b):
-        return ('{:X}{:X}{:X}').format(r, g, b)
+    def rgbToHex(self, r, g, b):
+        return ('{:02X}{:02X}{:02X}').format(r, g, b)
 
     def run(self):
         time.sleep(0.2)
@@ -77,15 +77,18 @@ class SerialThread(threading.Thread):
                         normalizedData = 1
                     elif (normalizedData < 0):
                         normalizedData = 0
-                        
+                    
+                    print("Normalized Data: ", normalizedData)
                     # self.window['-NormalizedSignal-'].update(normalizedData)
                     
                     g = round(min(255, 2* 255 * normalizedData))
                     r = round(min(255, 2* 255 * (1-normalizedData)))
 
                     # self.window['-RGB-'].update(str(r) + ", " + str(g) + ", 0")
-                    self.squareColor = self.rgb_to_hex(r, g, 00)
-                    self.squareColor = "#" + self.squareColor + "0"
+                    self.squareColor = self.rgbToHex(r, g, 00)
+                    print("RGB: ", r, g, 0)
+                    self.squareColor = "#" + self.squareColor
+                    print(self.squareColor)
                     self.canvas.itemconfig(self.rectangle, fill=self.squareColor)
                     # self.window['-Hex-'].update(self.squareColor)
 
