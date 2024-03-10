@@ -95,7 +95,8 @@ def printFoo():
     # minNumInput.focus_force()
     print(fooBar)
 
-square = canvas.create_rectangle(150, 150, 350, 350, fill="blue")
+rectangle = canvas.create_rectangle(150, 150, 350, 350, fill="blue")
+rectangle = canvas.create_rectangle(150, 150, 350, 350, fill="red")
 
 
 def changeColor():
@@ -112,7 +113,7 @@ changeColor()
 # running = True
 # serial_queue = Queue.Queue()
 
-# serial_thread = thread.SerialThread(serial_queue, root, square)
+# serial_thread = thread.SerialThread(serial_queue, root, rectangle)
 # serial_thread.start()
 root.update_idletasks()
 root.withdraw()
@@ -120,5 +121,18 @@ root.geometry(f"+{(root.winfo_screenwidth() - root.winfo_reqwidth()) // 2}+{(roo
 root.deiconify()
 
 debuggingFrame.grid_forget() # Starts with forgetting the debugging frame so it doesnt appear
+
+
+running = True
+serialQueue = Queue.Queue()
+
+serialThread = thread.SerialThread(serialQueue, minNumLabel, maxNumLabel, canvas, rectangle)
+serialThread.start()
+
+def updateNumbers():
+    serialThread.updateMinMax(int(minNumInput.get()), int(maxNumInput.get()))
+
+updateNumbersButton = ctk.CTkButton(debuggingFrame, text="Update Min-Max", command = updateNumbers)
+updateNumbersButton.grid(row = 10, column = 0, columnspan = 2)
 
 root.mainloop()

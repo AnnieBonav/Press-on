@@ -1,11 +1,13 @@
 import TkinterFlexSignal as fs, time, threading, tkinter as tk
 
 class SerialThread(threading.Thread):
-    def __init__(self, queue, window, graph):
+    def __init__(self, queue, minNumLabel, maxNumLabel, canvas, rectangle):
         threading.Thread.__init__(self)
         self.queue = queue
-        self.window = window
-        self.graph = graph
+        # self.root = root
+        self.canvas = canvas
+        self.rectangle = rectangle
+
         # If the connection is not found, the serial thread should not start
         self.flexSignal = fs
 
@@ -23,8 +25,13 @@ class SerialThread(threading.Thread):
             print("Connection failed, add a valid connection")
 
         self.squareColor = '#FFAFFF'
+        self.minNum = 0
+        self.maxNum = 650
+        self.minNumLabel = minNumLabel
+        self.maxNumLabel = maxNumLabel
 
         print("Finish initializing")
+
     def pause(self):
         self.paused = True
         print("Pausing")
@@ -35,12 +42,16 @@ class SerialThread(threading.Thread):
         self.pause_condition.notify()
         self.pause_condition.release()
 
-    def update_min_max(self, min, max):
+    def updateMinMax(self, min, max):
         print("Update min max")
         self.minNum = min
         self.maxNum = max
-        self.window['-CurrentMin-'].update(self.minNum)
-        self.window['-CurrentMax-'].update(self.maxNum)
+
+        self.minNumLabel = self.minNum
+        self.maxNumLabel = self.maxNum
+
+        print("NEW MIN: ", self.minNum)
+        print("NEW MAX: ", self.maxNum)
 
     def rgb_to_hex(self, r, g, b):
         return ('{:X}{:X}{:X}').format(r, g, b)
@@ -58,7 +69,8 @@ class SerialThread(threading.Thread):
                         normalizedData = (int(data) -self.minNum) / (self.maxNum - self.minNum)
                     else:
                         normalizedData = 0
-                    self.window['-RawSignal-'].update(data)
+
+                    # self.window['-RawSignal-'].update(data)
                     
 
                     if(normalizedData > 1):
@@ -66,16 +78,17 @@ class SerialThread(threading.Thread):
                     elif (normalizedData < 0):
                         normalizedData = 0
                         
-                    self.window['-NormalizedSignal-'].update(normalizedData)
+                    # self.window['-NormalizedSignal-'].update(normalizedData)
                     
                     g = round(min(255, 2* 255 * normalizedData))
                     r = round(min(255, 2* 255 * (1-normalizedData)))
 
-                    self.window['-RGB-'].update(str(r) + ", " + str(g) + ", 0")
+                    # self.window['-RGB-'].update(str(r) + ", " + str(g) + ", 0")
                     self.squareColor = self.rgb_to_hex(r, g, 00)
                     self.squareColor = "#" + self.squareColor + "0"
-                    self.window['-Hex-'].update(self.squareColor)
+                    self.canvas.itemconfig(self.rectangle, fill=self.squareColor)
+                    # self.window['-Hex-'].update(self.squareColor)
 
-                    # self.graph.DrawCircle((100, 100), 100,fill_color = self.squareColor)
-                    # canvas.itemconfig(circle, fill="red")
-                    self.window.itemconfig(self.graph(fill = self.squareColor))
+                        # self.graph.DrawCircle((100, 100), 100,fill_color = self.squareColor)
+                        # canvas.itemconfig(circle, fill="red")
+                    #self.window.itemconfig(self.graph(fill = self.squareColor))
