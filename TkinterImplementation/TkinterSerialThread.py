@@ -1,22 +1,22 @@
 import TkinterFlexSignal as fs, time, threading, tkinter as tk
+import math
+import serial.tools.list_ports
 
 class SerialThread(threading.Thread):
-    def __init__(self, queue, uiElements):
+    def __init__(self, queue, uiElements, startingCom):
         threading.Thread.__init__(self)
         self.queue = queue
-        # self.root = root
         self.uiElements = uiElements
 
         # If the connection is not found, the serial thread should not start
         self.flexSignal = fs
 
         # selected_com = "COM4"
-        selected_com = "/dev/cu.usbserial-210"
-        success = self.flexSignal.start_connection(selected_com)
-        self.pause_condition = threading.Condition(threading.Lock())
+        # selected_com = "/dev/cu.usbserial-210"
+        success = self.flexSignal.startConnection(startingCom)
+        self.pauseCondition = threading.Condition(threading.Lock())
         if success:
             self.paused = False
-            # self.window["-COM-"].update("Selected COM: " + str(selected_com))
             print("Connection was succesfull")
         else:
             self.pause()
@@ -29,15 +29,28 @@ class SerialThread(threading.Thread):
 
         print("Finish initializing")
 
+    def updateCom(self, com):
+        self.flexSignal.endConnection()
+        if com == "No port selected":
+            print("The selected port was the 'No port selected', the program will not continue")
+            self.pause()
+            return
+        if not self.flexSignal.startConnection(com):
+            print("The selected port was not valid, the program will not continue")
+            self.pause()
+            return
+        self.resume()
+        
     def pause(self):
         self.paused = True
         print("Pausing")
-        self.pause_condition.acquire()
+        self.pauseCondition.acquire()
     
     def resume(self):
         self.paused = False
-        self.pause_condition.notify()
-        self.pause_condition.release()
+        if self.pauseCondition.locked():
+            self.pauseCondition.notify()
+            self.pauseCondition.release()
 
     def updateMin(self, min):
         self.minNum = min
@@ -55,12 +68,21 @@ class SerialThread(threading.Thread):
     def run(self):
         time.sleep(0.2)
         while True:
-            with self.pause_condition:
+            comPorts = [comport.device for comport in serial.tools.list_ports.comports()]
+            # Check if the current COM port is in the list
+
+            if self.flexSignal.serialSignal.port not in comPorts:
+                # If the COM port does not exist, pause the thread and continue to the next iteration
+                self.uiElements["currentCom"].set("")
+                self.pause()
+                continue
+
+            with self.pauseCondition:
                 while self.paused:
-                    self.pause_condition.wait()
+                    self.pauseCondition.wait()
                 
-                if self.flexSignal.serial_signal.inWaiting():
-                    data = self.flexSignal.get_signal_data()
+                if self.flexSignal.serialSignal.inWaiting():
+                    data = self.flexSignal.getSignalData()
                     if(data != ''):
                         normalizedData = (int(data) - int(self.minNum) ) / (int(self.maxNum) - int(self.minNum))
                     else:
@@ -72,7 +94,13 @@ class SerialThread(threading.Thread):
                         normalizedData = 1
                     elif (normalizedData < 0):
                         normalizedData = 0
-                    
+
+                    # i want to create a "transformed" value from the normalized data so the closer it is to 0, the more it impacts that the number is smaller, and the closer it is to one, the less it impacts the decrease. For example: the decrease from 1 to 0.9 impacts less than the decrease from 0.1 to 0. Make the transformation logarithmic please.
+                    normalizedData = 1 - (1 - normalizedData) ** 2
+
+                    # epsilon = 1e-7
+                    # normalizedData = 1 - math.log(normalizedData + epsilon)
+
                     self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + str(round(normalizedData, 3)))
                     
                     g = round(min(255, 2* 255 * normalizedData))

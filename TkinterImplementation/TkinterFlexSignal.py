@@ -1,6 +1,6 @@
 import serial
 import os
-serial_port = None
+serialPort = None
 baud = 9600
 
 # for signal analysis, not UI
@@ -12,12 +12,12 @@ file_name = "Test"
 current_file = 0
 
 def set_serial_port(port):
-    global serial_port 
-    serial_port = port
-    print(serial_port)
+    global serialPort 
+    serialPort = port
+    print(serialPort)
 
 def get_serial_port():
-    return serial_port
+    return serialPort
 
 def get_baud():
     return baud
@@ -26,35 +26,35 @@ def get_baud():
 # This serial needs to be started with a default COM, which is COM3
 # If it has nothing, it should handle the error
 
-serial_signal = None
+serialSignal = None
 
-def start_connection(com_name):
-    global serial_port
-    global serial_signal
+def startConnection(comName):
+    global serialPort
+    global serialSignal
 
-    serial_port = com_name
+    serialPort = comName
     try:
-        serial_signal = serial.Serial(com_name, baud)
-        print("Connection started on COM: ", serial_port)
+        serialSignal = serial.Serial(comName, baud)
+        print("Connection started on COM: ", serialPort)
         return True
     except:
-        print("Connection failed, no connection with COM", serial_port, ".")
+        print("Connection failed, no connection with COM", serialPort, ".")
         return False
     
-def end_connection():
-    save_data()
+def endConnection():
+    saveData()
     print("Ended connection")
 
-def get_signal_data():
+def getSignalData():
     #while self.isRuning: # I create an implicit listener: whenever I change this value oustide, the function will stop running
-    get_data = str(serial_signal.readline())
+    get_data = str(serialSignal.readline())
     data = get_data[2:][:-5]
     return data
 
-def print_file_name():
+def printFileName():
     print(file_name)
 
-def save_data():
+def saveData():
     file = open(file_name, "a")
     file.write(file_name)
 
