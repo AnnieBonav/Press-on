@@ -95,7 +95,7 @@ def comPicker(choice):
     serialThread.updateCom(newCom)
 
 # Greeting
-greeting = ctk.CTkLabel(root, text = "Hello! This is Press-On, an Application designed to help you visualize the pressure that a user is applying to a ball.", font=("Arial", 16), wraplength=450, pady=10, padx=10, justify="center", bg_color="pink")
+greeting = ctk.CTkLabel(root, text = "Hello! This is Press-On, an Application designed to help you visualize the pressure that a user is applying to a ball.", font=("Arial", 16), wraplength=450, pady=10, padx=10, justify="center")
 greeting.grid(row = greetingRow, column = 0, columnspan = 2, padx = 20)
 
 def toggleDebugging():

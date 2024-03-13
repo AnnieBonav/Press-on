@@ -1,2 +1,4 @@
 PySimpleGUI
-serial
+pyserial
+py2app
+python-dotenv

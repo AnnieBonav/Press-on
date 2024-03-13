@@ -16,7 +16,7 @@ class SerialThread(threading.Thread):
         success = self.flexSignal.startConnection(startingCom)
         self.pauseCondition = threading.Condition(threading.Lock())
         if success:
-            self.paused = False
+            self.lockAcquired = False
             print("Connection was succesfull")
         else:
             self.pause()
@@ -35,20 +35,21 @@ class SerialThread(threading.Thread):
             print("The selected port was the 'No port selected', the program will not continue")
             self.pause()
             return
-        if not self.flexSignal.startConnection(com):
+        success = self.flexSignal.startConnection(com)
+        if not success:
             print("The selected port was not valid, the program will not continue")
             self.pause()
             return
         self.resume()
         
     def pause(self):
-        self.paused = True
         print("Pausing")
         self.pauseCondition.acquire()
+        self.lockAcquired = True
     
     def resume(self):
-        self.paused = False
-        if self.pauseCondition.locked():
+        if self.lockAcquired:
+            self.lockAcquired = False
             self.pauseCondition.notify()
             self.pauseCondition.release()
 
@@ -78,7 +79,7 @@ class SerialThread(threading.Thread):
                 continue
 
             with self.pauseCondition:
-                while self.paused:
+                while self.lockAcquired:
                     self.pauseCondition.wait()
                 
                 if self.flexSignal.serialSignal.inWaiting():

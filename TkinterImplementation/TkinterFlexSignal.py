@@ -1,5 +1,6 @@
 import serial
 import os
+import threading
 serialPort = None
 baud = 9600
 
@@ -35,8 +36,17 @@ def startConnection(comName):
     serialPort = comName
     try:
         serialSignal = serial.Serial(comName, baud)
-        print("Connection started on COM: ", serialPort)
-        return True
+        try:
+            print("Waiting for data...")
+            data = getSignalData()
+            if data == None:
+                print("COM tried to get data, but No data received.")
+                return False
+            print("Connection started on COM: ", serialPort)
+            return True
+        except:
+            print("Error getting data.")
+            return False
     except:
         print("Connection failed, no connection with COM", serialPort, ".")
         return False
@@ -44,11 +54,23 @@ def startConnection(comName):
 def endConnection():
     saveData()
     print("Ended connection")
+    serialSignal.close()
 
 def getSignalData():
-    #while self.isRuning: # I create an implicit listener: whenever I change this value oustide, the function will stop running
-    get_data = str(serialSignal.readline())
-    data = get_data[2:][:-5]
+    def readSerial():
+        print("Reading serial")
+        nonlocal data
+        rawData = str(serialSignal.readline())
+        data = rawData[2:][:-5]
+
+    data = None
+    thread = threading.Thread(target=readSerial)
+    thread.start()
+    thread.join(timeout=5)
+
+    if thread.is_alive():
+        return None
+
     return data
 
 def printFileName():

@@ -1,0 +1,23 @@
+requires = ["setuptools", "setuptools-scm"]
+
+name = "Press-On-TOML"
+authors = [
+    {
+        "name" : "Annie Bonavides",
+        "email" : "anniebonav@outlook.com"
+    },
+]
+description = "This is a description"
+
+readme = "README.rst"
+
+keywords = ["one", "two"]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "PySimpleGUI",
+    "pyserial",
+]
