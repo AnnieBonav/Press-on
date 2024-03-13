@@ -2,3 +2,4 @@ PySimpleGUI
 pyserial
 py2app
 python-dotenv
+customtkinter

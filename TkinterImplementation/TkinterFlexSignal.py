@@ -58,7 +58,6 @@ def endConnection():
 
 def getSignalData():
     def readSerial():
-        print("Reading serial")
         nonlocal data
         rawData = str(serialSignal.readline())
         data = rawData[2:][:-5]
