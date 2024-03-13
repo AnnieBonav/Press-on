@@ -3,9 +3,11 @@ import math
 import serial.tools.list_ports
 
 class SerialThread(threading.Thread):
-    def __init__(self, queue, uiElements, startingCom):
+    def __init__(self, queue):
         threading.Thread.__init__(self)
         self.queue = queue
+
+    def initialize(self, uiElements, startingCom):
         self.uiElements = uiElements
 
         # If the connection is not found, the serial thread should not start

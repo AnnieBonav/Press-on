@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['TkinterGUI.pyw'],
+    ['TkinterGUI.py'],
     pathex=[],
     binaries=[],
     datas=[],
