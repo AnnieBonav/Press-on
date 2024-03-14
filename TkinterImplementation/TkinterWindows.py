@@ -1,11 +1,9 @@
 from tkinter import *
 import queue as Queue, customtkinter as ctk
-import TkinterSerialThread as thread
-import TkinterFlexSignal as fs
-import time
+import PressOnFlexSignal as poSignal
 from tkinter import messagebox
 from enum import Enum
-import threading, re, serial.tools.list_ports, math
+import threading, re, serial.tools.list_ports, math, time
 
 class ErrorType(Enum):
     MIN_NUM_BIGGER_THAN_MAX_NUM = "I am sorry, but the minimum input you are trying to save is bigger than the current maximum input. Please update with a valid number."
@@ -80,7 +78,7 @@ class WindowsPressOnUI(ctk.CTk):
         #
 
         # Combo COM Port selection
-        self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = lambda : self.comPicker(self.comComboBox.get()))
+        self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = self.comPicker)
         self.comComboBox.grid(row = self.uiValues["comInfoRow"], column = 0)
                 
         self.currentCom.trace_add("write", self.handleComChange)
@@ -185,11 +183,8 @@ class WindowsPressOnUI(ctk.CTk):
 
         self.protocol("WM_DELETE_WINDOW", self.onClosing)
 
-        # Create a queue
-        self.updateDataQueue = Queue.Queue()
-
         # Create serial connection
-        self.flexSignal = fs
+        self.flexSignal = poSignal
         self.startConnection(self.comComboBox.get())
 
         # Create a new thread and start it
@@ -236,11 +231,23 @@ class WindowsPressOnUI(ctk.CTk):
         return ('{:02X}{:02X}{:02X}').format(r, g, b)
 
     def getUpdatedData(self):
+        comPorts = [comport.device for comport in serial.tools.list_ports.comports()]
+            # Check if the current COM port is in the list
+
+        if self.flexSignal.serialSignal.port not in comPorts:
+            # If the COM port does not exist, pause the thread and continue to the next iteration
+            self.uiElements["currentCom"].set("")
+            self.pause()
+            return
+    
         minVar = self.uiValues["min"]
         maxVar = self.uiValues["max"]
         data = self.flexSignal.getSignalData()
-        if(data != ''):
-            normalizedData = (int(data) - int(minVar) ) / (int(maxVar) - int(minVar))
+        if data != "":
+            try:
+                normalizedData = (int(data) - int(minVar)) / (int(maxVar) - int(minVar))
+            except Exception:
+                return
         else:
             normalizedData = 0
 
@@ -254,15 +261,16 @@ class WindowsPressOnUI(ctk.CTk):
         # epsilon = 1e-7
         # normalizedData = 1 - math.log(normalizedData + epsilon)
 
-        self.normalizedData = str(round(normalizedData, 3))
-        if self.rawInput == 1023:
+        if int(self.rawInput) == 1023:
             normalizedData = 1
         if(normalizedData > 1):
             normalizedData = 1
         elif (normalizedData < 0):
             normalizedData = 0
 
-        self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + str(round(normalizedData, 3)))
+        self.normalizedData = str(round(normalizedData, 3))
+
+        self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + self.normalizedData)
         
         g = round(min(255, 2* 255 * normalizedData))
         r = round(min(255, 2* 255 * (1-normalizedData)))
@@ -283,6 +291,7 @@ class WindowsPressOnUI(ctk.CTk):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.flexSignal.endConnection()
             self.running = False
+            time.sleep(2)
             self.destroy()
 
     def popup(self, errorType : ErrorType) :
@@ -362,7 +371,8 @@ class WindowsPressOnUI(ctk.CTk):
         # Print the list of COM ports
         print(self.comPorts, "\n\n")
 
-    def comPicker(self):
+    def comPicker(self, something):
+        print("Com picker something", something)
         newCom = self.comComboBox.get()
         print(f"Updating COM in Serial Thread to {newCom}")
         self.updateCom(newCom)
@@ -403,6 +413,7 @@ class WindowsPressOnUI(ctk.CTk):
 
 if __name__ == "__main__":
     app = WindowsPressOnUI()
+    print("App ended")
 
     
     

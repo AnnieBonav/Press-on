@@ -1,6 +1,5 @@
-import serial
-import os
-import threading
+import serial, os, threading
+
 serialPort = None
 baud = 9600
 
@@ -8,19 +7,19 @@ baud = 9600
 min_signal = 23
 max_signal = 1023
 data_samples = 40
-is_running = False
-file_name = "Test"
-current_file = 0
+isRunning = False
+fileName = "Test"
+currentFile = 0
 
-def set_serial_port(port):
+def setSerialPort(port):
     global serialPort 
     serialPort = port
     print(serialPort)
 
-def get_serial_port():
+def getSerialPort():
     return serialPort
 
-def get_baud():
+def getBaud():
     return baud
 
 
@@ -63,7 +62,7 @@ def getSignalData():
         data = rawData[2:][:-5]
 
     data = None
-    thread = threading.Thread(target=readSerial)
+    thread = threading.Thread(target = readSerial)
     thread.start()
     thread.join(timeout=5)
 
@@ -73,9 +72,9 @@ def getSignalData():
     return data
 
 def printFileName():
-    print(file_name)
+    print(fileName)
 
 def saveData():
-    file = open(file_name, "a")
-    file.write(file_name)
+    file = open(fileName, "a")
+    file.write(fileName)
 
