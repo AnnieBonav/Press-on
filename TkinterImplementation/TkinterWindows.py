@@ -5,8 +5,7 @@ import TkinterFlexSignal as fs
 import time
 from tkinter import messagebox
 from enum import Enum
-import threading
-import re, serial.tools.list_ports
+import threading, re, serial.tools.list_ports, math
 
 class ErrorType(Enum):
     MIN_NUM_BIGGER_THAN_MAX_NUM = "I am sorry, but the minimum input you are trying to save is bigger than the current maximum input. Please update with a valid number."
@@ -16,14 +15,12 @@ class ErrorType(Enum):
     INVALID_MIN_NUMBER = "I am sorry, but your input for the minimum input is not a valid number. Please make sure it does not contain letters or special characters."
     INVALID_MAX_NUMBER = "I am sorry, but your input for the maximum input is not a valid number. Please make sure it does not contain letters or special characters."
 
-isDebugging = False
-
-
 class WindowsPressOnUI(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Press-On")
-
+        self.isDebugging = False
+        self.running = True
         #
         # VARIABLES
         #
@@ -32,7 +29,7 @@ class WindowsPressOnUI(ctk.CTk):
         self.comInfo = []
         self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = self.comPicker)
         self.serialQueue = Queue.Queue()
-        self.serialThread = thread.SerialThread(self.serialQueue)
+        ## self.serialThread = thread.SerialThread(self.serialQueue)
 
         self.uiValues = {
             "titleRow" : 0,
@@ -51,6 +48,10 @@ class WindowsPressOnUI(ctk.CTk):
             "initialMax" : 650,
             "screenWidth" : self.winfo_screenwidth() // 2,
             "screenHeight" : self.winfo_screenheight() // 6 * 5,
+            "minVar" : ctk.IntVar(),
+            "maxVar" : ctk.IntVar(),
+            "min" : -1,
+            "max" : -1,
         }
 
         # Call starting functions
@@ -79,7 +80,7 @@ class WindowsPressOnUI(ctk.CTk):
         #
 
         # Combo COM Port selection
-        self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = lambda : self.comPicker(self,self.comComboBox.get()))
+        self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = lambda : self.comPicker(self.comComboBox.get()))
         self.comComboBox.grid(row = self.uiValues["comInfoRow"], column = 0)
                 
         self.currentCom.trace_add("write", self.handleComChange)
@@ -99,8 +100,8 @@ class WindowsPressOnUI(ctk.CTk):
         # Debug Section
         #
         # Debug button
-        debugButton = ctk.CTkButton(self, text = "Debug", command = self.toggleDebugging, width = 10, font=("Arial", 14))
-        debugButton.grid(row = self.uiValues["debugButtonRow"], column = 0, columnspan = 2, pady = 10)
+        self.debugButton = ctk.CTkButton(self, text = "Debug", command = self.toggleDebugging, width = 10, font=("Arial", 14))
+        self.debugButton.grid(row = self.uiValues["debugButtonRow"], column = 0, columnspan = 2, pady = 10)
 
         # Debugging Frame
         self.debuggingFrame = ctk.CTkFrame(self, width=self.uiValues["screenWidth"]//3*2, height=self.uiValues["screenHeight"]//4)
@@ -121,11 +122,11 @@ class WindowsPressOnUI(ctk.CTk):
         self.minNumLabel = ctk.CTkLabel(self.debuggingFrame, text="Min: ", font=("Arial", 16))
         self.minNumLabel.grid(row = self.uiValues["minNumRow"], column = 0)
         # Min num input	variable
-        minVar = ctk.IntVar()
-        minVar.set(self.uiValues["initialMin"])
+        self.uiValues["minVar"].set(self.uiValues["initialMin"])
+        self.uiValues["min"] = self.uiValues["initialMin"]
         # Min num input
-        minNumInput = ctk.CTkEntry(self.debuggingFrame, textvariable = minVar, justify="right")
-        minNumInput.grid(row = self.uiValues["minNumRow"], column = 1)
+        self.minNumInput = ctk.CTkEntry(self.debuggingFrame, textvariable = self.uiValues["minVar"], justify="right")
+        self.minNumInput.grid(row = self.uiValues["minNumRow"], column = 1)
 
         # Current MaxNum Label
         self.currentMaxNumLabel = ctk.CTkLabel(self.debuggingFrame, text = f"Current Max: {self.uiValues['initialMax']}", font=("Arial", 16))
@@ -134,11 +135,11 @@ class WindowsPressOnUI(ctk.CTk):
         self.maxNumLabelTitle = ctk.CTkLabel(self.debuggingFrame, text = "Max: ", font=("Arial", 16))
         self.maxNumLabelTitle.grid(row = self.uiValues["maxNumRow"], column = 0, pady=10)
         # Max num input variable
-        maxVar = ctk.IntVar()
-        maxVar.set(self.uiValues["initialMax"])
+        self.uiValues["maxVar"].set(self.uiValues["initialMax"])
+        self.uiValues["max"] = self.uiValues["initialMax"]
         # Max num input
-        maxNumInput = ctk.CTkEntry(self.debuggingFrame, textvariable = maxVar, justify="right")
-        maxNumInput.grid(row = self.uiValues["maxNumRow"], column = 1)
+        self.maxNumInput = ctk.CTkEntry(self.debuggingFrame, textvariable = self.uiValues["maxVar"], justify="right")
+        self.maxNumInput.grid(row = self.uiValues["maxNumRow"], column = 1)
 
         #
         # Other data section
@@ -160,7 +161,7 @@ class WindowsPressOnUI(ctk.CTk):
         # self.deiconify()
         self.debuggingFrame.grid_forget() # Starts with forgetting the debugging frame so it doesnt appear
 
-        elementsDictionary = {
+        self.uiElements = {
             "currentMinNumLabel": self.currentMinNumLabel,
             "currentMaxNumLabel": self.currentMaxNumLabel,
             "canvas": self.canvas,
@@ -173,8 +174,8 @@ class WindowsPressOnUI(ctk.CTk):
         }
 
         # Initializes the serial thread with the elements dictionary (so the thread can update the elements) and the com port (so the thread can use it to begin the listening)
-        self.serialThread.initialize(elementsDictionary, self.comComboBox.get())
-        self.serialThread.start()
+        ## self.serialThread.initialize(self.uiElements, self.comComboBox.get())
+        ## self.serialThread.start()
 
         self.minNumSave = ctk.CTkButton(self.debuggingFrame, text="Save", command = self.updateMin)
         self.minNumSave.grid(row = self.uiValues["minNumRow"], column = 2)
@@ -183,18 +184,113 @@ class WindowsPressOnUI(ctk.CTk):
         maxNumSave.grid(row = self.uiValues["maxNumRow"], column = 2)
 
         self.protocol("WM_DELETE_WINDOW", self.onClosing)
+
+        # Create a queue
+        self.updateDataQueue = Queue.Queue()
+
+        # Create serial connection
+        self.flexSignal = fs
+        self.startConnection(self.comComboBox.get())
+
+        # Create a new thread and start it
+        updateThread = threading.Thread(target = self.threadTask)
+        updateThread.start()
+
         self.mainloop()
+
+    def startConnection(self, startingCom):
+        success = self.flexSignal.startConnection(startingCom)
+        self.pauseCondition = threading.Condition(threading.Lock())
+        if success:
+            self.lockAcquired = False
+            print("Connection was succesfull")
+        else:
+            self.pause()
+            print("Connection failed, add a valid connection")
+    
+    def updateCom(self, com):
+        self.flexSignal.endConnection()
+        if com == "No port selected":
+            print("The selected port was the 'No port selected', the program will not continue")
+            self.pause()
+            return
+        success = self.flexSignal.startConnection(com)
+        if not success:
+            print("The selected port was not valid, the program will not continue")
+            self.pause()
+            return
+        self.resume()
+        
+    def pause(self):
+        print("Pausing")
+        self.pauseCondition.acquire()
+        self.lockAcquired = True
+
+    def resume(self):
+        if self.lockAcquired:
+            self.lockAcquired = False
+            self.pauseCondition.notify()
+            self.pauseCondition.release()
+
+    def rgbToHex(self, r, g, b):
+        return ('{:02X}{:02X}{:02X}').format(r, g, b)
+
+    def getUpdatedData(self):
+        minVar = self.uiValues["min"]
+        maxVar = self.uiValues["max"]
+        data = self.flexSignal.getSignalData()
+        if(data != ''):
+            normalizedData = (int(data) - int(minVar) ) / (int(maxVar) - int(minVar))
+        else:
+            normalizedData = 0
+
+        self.rawInput = data
+        self.uiElements["currentRawInputLabel"].configure(text = "Raw input: " + str(data))
+
+        # i want to create a "transformed" value from the normalized data so the closer it is to 0, the more it impacts that the number is smaller, and the closer it is to one, the less it impacts the decrease. For example: the decrease from 1 to 0.9 impacts less than the decrease from 0.1 to 0. Make the transformation logarithmic please.
+        normalizedData = 1 - (1 - normalizedData) ** 2
+
+        # TODO: Abstract the decision of the transformation to a method that can be selected by the therapist
+        # epsilon = 1e-7
+        # normalizedData = 1 - math.log(normalizedData + epsilon)
+
+        self.normalizedData = str(round(normalizedData, 3))
+        if self.rawInput == 1023:
+            normalizedData = 1
+        if(normalizedData > 1):
+            normalizedData = 1
+        elif (normalizedData < 0):
+            normalizedData = 0
+
+        self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + str(round(normalizedData, 3)))
+        
+        g = round(min(255, 2* 255 * normalizedData))
+        r = round(min(255, 2* 255 * (1-normalizedData)))
+        rgbLabel = "RGB: " + str(r) + ", " + str(g) + ", 0"
+        self.uiElements["rgbColorLabel"].configure(text = rgbLabel)
+
+        color = self.rgbToHex(r, g, 00)
+        visualizationColor = "#" + color
+        self.uiElements["canvas"].itemconfig(self.uiElements["visualization"], fill = visualizationColor)
+        self.uiElements["hexColorLabel"].configure(text = "Hex: " + visualizationColor)
+    
+    def threadTask(self):
+        while self.running:
+            self.getUpdatedData()
+
 
     def onClosing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.flexSignal.endConnection()
+            self.running = False
             self.destroy()
 
-    def popup(errorType) :
-        messagebox.showerror("Error updating the numbers",errorType.input)  
+    def popup(self, errorType : ErrorType) :
+        messagebox.showerror("Error updating the numbers", errorType.value)  
 
     def updateMin(self):
-        min = self.minVar.get()
-        max = self.maxVar.get()
+        min = self.uiValues["minVar"].get()
+        max = self.uiValues["maxVar"].get()
         print("GOT MIN")
         try:
             min = int(min)
@@ -211,11 +307,12 @@ class WindowsPressOnUI(ctk.CTk):
             return
         
         print(f"Updating Min: {min}")
-        self.serialThread.updateMin(min)
+        self.uiValues["min"] = min
+        self.uiElements["currentMinNumLabel"].configure(text = f"Current Min: {min}")
 
     def updateMax(self):
-        min = self.minVar.get()
-        max = self.maxVar.get()
+        min = self.uiValues["minVar"].get()
+        max = self.uiValues["maxVar"].get()
         print("GOT MAX")
         try:
             max = int(max)
@@ -232,7 +329,8 @@ class WindowsPressOnUI(ctk.CTk):
             return
 
         print(f"Updating Max: {max}")
-        self.serialThread.updateMax(max)
+        self.uiValues["max"] = max
+        self.uiElements["currentMaxNumLabel"].configure(text = f"Current Max: {max}")
 
     #
     # METHODS
@@ -264,19 +362,20 @@ class WindowsPressOnUI(ctk.CTk):
         # Print the list of COM ports
         print(self.comPorts, "\n\n")
 
-    def comPicker(self, choice):
+    def comPicker(self):
         newCom = self.comComboBox.get()
         print(f"Updating COM in Serial Thread to {newCom}")
-        self.serialThread.updateCom(newCom)
+        self.updateCom(newCom)
+        ## self.serialThread.updateCom(newCom)
 
-    def toggleDebugging(self, isDebugging):
-        if isDebugging:
+    def toggleDebugging(self):
+        if self.isDebugging:
             self.debuggingFrame.grid_forget()
         else:
-            self.debuggingFrame.grid(row = self.debuggingFrameRow, column = 0, columnspan = 2)
+            self.debuggingFrame.grid(row = self.uiValues["debuggingFrameRow"], column = 0, columnspan = 2)
         
-        isDebugging = not isDebugging
-        self.debugButton.configure(text = "Debug" if not isDebugging else "Stop Debugging")
+        self.isDebugging = not self.isDebugging
+        self.debugButton.configure(text = "Debug" if not self.isDebugging else "Stop Debugging")
 
     def refreshComPorts(self):
         print("Refreshing COM Ports")
@@ -291,7 +390,7 @@ class WindowsPressOnUI(ctk.CTk):
         comInfo.append("No info to show")
 
         self.comComboBox.destroy()
-        self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = lambda: self.comPicker(self.comComboBox.get()))
+        self.comComboBox = ctk.CTkComboBox(self, values = self.comPorts, font=("Arial", 14), command = self.comPicker)
         self.comComboBox.grid(row = self.uiValues["comInfoRow"], column = 0)
 
         # looks if the com that was selected still exists, if it does, then it is chosen. If it does not, then the first com is chosen
@@ -304,3 +403,6 @@ class WindowsPressOnUI(ctk.CTk):
 
 if __name__ == "__main__":
     app = WindowsPressOnUI()
+
+    
+    
