@@ -3,9 +3,11 @@ import math
 import serial.tools.list_ports
 
 class SerialThread(threading.Thread):
-    def __init__(self, queue, uiElements, startingCom):
+    def __init__(self, queue):
         threading.Thread.__init__(self)
         self.queue = queue
+
+    def initialize(self, uiElements, startingCom):
         self.uiElements = uiElements
 
         # If the connection is not found, the serial thread should not start
@@ -23,9 +25,13 @@ class SerialThread(threading.Thread):
             # self.window["-COM-"].update(f"Invalid USB port '{selected_com}'. Please select another COM. ")
             print("Connection failed, add a valid connection")
 
-        self.squareColor = '#FFAFFF'
-        self.minNum = 0
+        self.minNum = 1
         self.maxNum = 650
+        self.rawInput = 1
+        self.normalizedData = 1
+        self.rgbLabel = "RGB: 255, 0, 0"
+        self.color = "#000000"
+        self.colorLabel = "Hex: #000000"
 
         print("Finish initializing")
 
@@ -56,16 +62,20 @@ class SerialThread(threading.Thread):
     def updateMin(self, min):
         self.minNum = min
         print(f"Updating min in serial thread with Min: {self.minNum}")
-        self.uiElements["minNumLabel"].configure(text = "Current min: " + str(self.minNum))
 
     def updateMax(self, max):
         self.maxNum = max
         print(f"Updating max in serial thread with Max : {self.maxNum}")
-        self.uiElements["maxNumLabel"].configure(text = "Current max: " + str(self.maxNum))
 
     def rgbToHex(self, r, g, b):
         return ('{:02X}{:02X}{:02X}').format(r, g, b)
 
+    #
+    # GETTERS
+    #
+    def getData(self):
+        return {"colorLabel":self.colorLabel, "rawInput":self.rawInput, "normalizedData":self.normalizedData, "rgbLabel":self.rgbLabel, "color":self.color}
+    
     def run(self):
         time.sleep(0.2)
         while True:
@@ -89,7 +99,9 @@ class SerialThread(threading.Thread):
                     else:
                         normalizedData = 0
 
-                    self.uiElements["currentRawInputLabel"].configure(text = "Raw input: " + str(data))
+                    self.rawInput = data
+                    print(f"Raw input: {data}")
+                    ## self.uiElements["currentRawInputLabel"].configure(text = "Raw input: " + str(data))
                     
                     if(normalizedData > 1):
                         normalizedData = 1
@@ -98,17 +110,22 @@ class SerialThread(threading.Thread):
 
                     # i want to create a "transformed" value from the normalized data so the closer it is to 0, the more it impacts that the number is smaller, and the closer it is to one, the less it impacts the decrease. For example: the decrease from 1 to 0.9 impacts less than the decrease from 0.1 to 0. Make the transformation logarithmic please.
                     normalizedData = 1 - (1 - normalizedData) ** 2
-
                     # epsilon = 1e-7
                     # normalizedData = 1 - math.log(normalizedData + epsilon)
 
-                    self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + str(round(normalizedData, 3)))
+                    self.normalizedData = str(round(normalizedData, 3))
+
+                    ## self.uiElements["normalizedInputLabel"].configure(text = "Norm. input: " + str(round(normalizedData, 3)))
                     
                     g = round(min(255, 2* 255 * normalizedData))
                     r = round(min(255, 2* 255 * (1-normalizedData)))
 
+                    self.rgbLabel = "RGB: " + str(r) + ", " + str(g) + ", 0"
+                    ## self.uiElements["rgbColorLabel"].configure(text = "RGB: " + str(r) + ", " + str(g) + ", 0")
+                    color = self.rgbToHex(r, g, 00)
+                    self.color = "#" + color
+                    self.colorLabel = "Hex: #" + color
                     
-                    self.uiElements["rgbColorLabel"].configure(text = "RGB: " + str(r) + ", " + str(g) + ", 0")
-                    visualizationColor = "#" + self.rgbToHex(r, g, 00)
-                    self.uiElements["canvas"].itemconfig(self.uiElements["visualization"], fill=visualizationColor)
-                    self.uiElements["hexColorLabel"].configure(text = "Hex: " + visualizationColor)
+                    ## visualizationColor = "#" + self.rgbToHex(r, g, 00)
+                    ## self.uiElements["canvas"].itemconfig(self.uiElements["visualization"], fill=visualizationColor)
+                    ## self.uiElements["hexColorLabel"].configure(text = "Hex: " + visualizationColor)

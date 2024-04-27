@@ -37,6 +37,8 @@ The Graphical User Interface is created using various python 3 Libraries. Mainly
 
 ## How to create code executable
 ### For windows
+pyinstaller --onefile --clean TkinterGUI.py
+
 ### For mac
 sudo pyinstaller --onefile --clean TkinterGUI.py
 
